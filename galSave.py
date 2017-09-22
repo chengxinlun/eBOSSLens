@@ -81,7 +81,7 @@ def _doubletSave(obj, z_s, peak_candidates, doublet_index, savedir, pP, nP, o3w,
                     str(obj.DEC) + " " + str(obj.z) + " " + str(obj.plate) +
                     " " + str(obj.mjd) + " " + str(obj.fiberid) + " " +
                     str(peak_candidates[doublet_index].wavDoublet[0]) + " " +
-                    str(pP) + " " + str(nP) + " " + str(obj.sn) + " " +
+                    str(pP) + " " + str(nP) + " " + str(obj.snSpectra) + " " +
                     str(o3w) + " " + str(o3s) + "\n")
     fileD.close()
     return detection

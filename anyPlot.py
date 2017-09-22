@@ -1,8 +1,8 @@
 import os
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from pysynphot import observation
-from pysynphot import spectrum
 from SDSSObject import SDSSObject
 from peakFinder import bolEstm
 
@@ -162,21 +162,8 @@ bn = np.arange(3000.0, 7000.0, 0.5)
 nsn = []
 for each in pmf:
     obj = SDSSObject(int(each[0]), int(each[1]), int(each[2]), 'v5_7_0',
-                     '../SCRATCH')
+                     '/SCRATCH')
     o2w = each[3]
     if each[3] == 0.0:
         o2w = None
     wsn = plotter(obj, '../PlotCheck', o2w)
-    if wsn != []:
-        nsn.append(rebin_spec(wsn[0], wsn[1], bn))
-nsn = np.array(nsn)
-y = np.mean(nsn, axis=0)
-plt.plot(bn, y)
-plt.xlabel("Wavelength")
-plt.ylabel("SN Ratio")
-plt.vlines(3727.0, np.min(y), np.max(y), linestyles='dashed')
-plt.vlines(4853.0, np.min(y), np.max(y), linestyles='dashed')
-plt.vlines(4960.0, np.min(y), np.max(y), linestyles='dashed')
-plt.vlines(5008.0, np.min(y), np.max(y), linestyles='dashed')
-plt.vlines(6563.0, np.min(y), np.max(y), linestyles='dashed')
-plt.show()

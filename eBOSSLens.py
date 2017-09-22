@@ -33,8 +33,12 @@ wMask = np.array([[5570.0, 5590.0], [5880.0, 5905.0], [6285.0, 6315.0],
                   [9217.0, 9237.0], [9300.0, 9330.0], [9365.0, 9385.0],
                   [9425.0, 9445.0], [9777.0, 9797.0]])
 # Strong emission lines should also be masked
-eMask = np.array([4103.0, 4342.0, 4863.0, 6563.0, 5008.0, 4960.0, 4364.0,
-                  5877.0, 6585.0, 6680.0])
+eMask = np.array([[3930.0, 3940.0], [4088.0, 4118.0], [4328.0, 4378.0],
+                  [4467.0, 4477.0], [4945.0, 5030.0], [5172.0, 5182.0],
+                  [5862.0, 5902.0], [6530.0, 6610.0], [6715.0, 6730.0],
+                  [6750.0, 6760.0], [7060.0, 7070.0], [7315.0, 7335.0],
+                  [7385.0, 7395.0], [7745.0, 7755.0], [8530.0, 8550.0],
+                  [9010.0, 9020.0], [9060.0, 9080.0]])
 
 
 def eBOSSLens(plate, mjd, fiberid, datav, searchLyA, QSOlens, Jackpot, savedir,
@@ -92,11 +96,9 @@ def eBOSSLens(plate, mjd, fiberid, datav, searchLyA, QSOlens, Jackpot, savedir,
         raise Exception("Rejected by filter")
     # Mask strong emission lines and sn filter
     if not (QSOlens or searchLyA or Jackpot):
-        if obj.sn > snCrit:
+        if obj.snSpectra > snCrit:
             raise Exception("Rejected by unusual high SN ratio")
-        for each in eMask:
-            obj.mask(np.array([[each - emWidth, each + emWidth]]) *
-                     (obj.z + 1.0))
+        obj.mask(eMask * (obj.z + 1.0))
     # Mask BOSS spectra glitches + Sky
     obj.mask(wMask)
     if QSOlens:
