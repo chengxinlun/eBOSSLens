@@ -35,6 +35,11 @@ def gauss2(x,x1,x2,A1,A2,var):
     return gauss(x,x1,A1,var) + gauss(x,x2,A2,var)
 
 
+# Generate triplet
+def gauss3(x, params, hb, o31, o32):
+    return gauss(x=xdata, x_0=hb-params[0], A=params[1], var=params[2]) + gauss(x=xdata, x_0=o31-params[0], A=params[3], var=params[4]) + gauss(x=xdata, x_0=o32-params[0], A=params[5], var=params[4])
+
+
 #Skew normal profile
 def skew(x,A,w,a,eps):
     phi = 0.5*(1+sp.erf(a*(x-eps)/(w*np.sqrt(2))))
@@ -48,6 +53,11 @@ def skew2(x,A1,w1,a1,eps1,A2,w2,a2,eps2):
 #Reduced Chi square for one gaussian
 def chi2g(params, xdata, ydata, ivar):
     return np.sum(ivar*(ydata - gauss(x=xdata, x_0=params[0], A=params[1], var=params[2]))**2)/(len(xdata)-len(params)-1)
+
+
+#Reduced Chi square for Triplet
+def chi2T(params, xdata, ydata, ivar, hb, o31, o32):
+    return np.sum(ivar*(ydata - gauss(x=xdata, x_0=hb-params[0], A=params[1], var=params[2]) - gauss(x=xdata, x_0=o31-params[0], A=params[3], var=params[4]) - gauss(x=xdata, x_0=o32-params[0], A=params[5], var=params[4]))**2)/(len(xdata)-len(params)-1)
 
 
 #Reduced Chi square for Doublet
