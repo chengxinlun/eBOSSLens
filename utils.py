@@ -1,8 +1,6 @@
 import os
 import numpy as np
-import pyfits as pf
 import math
-from scipy.integrate import quad
 from scipy import special as sp
 from scipy import interpolate
 import errno
@@ -37,7 +35,9 @@ def gauss2(x,x1,x2,A1,A2,var):
 
 # Generate triplet
 def gauss3(x, params, hb, o31, o32):
-    return gauss(x=xdata, x_0=hb-params[0], A=params[1], var=params[2]) + gauss(x=xdata, x_0=o31-params[0], A=params[3], var=params[4]) + gauss(x=xdata, x_0=o32-params[0], A=params[5], var=params[4])
+    return gauss(x, x_0=hb-params[0], A=params[1], var=params[2]) + \
+        gauss(x, x_0=o31-params[3], A=params[4], var=params[5]) + \
+        gauss(x, x_0=o32-params[3], A=params[6], var=params[5])
 
 
 #Skew normal profile
@@ -57,7 +57,8 @@ def chi2g(params, xdata, ydata, ivar):
 
 #Reduced Chi square for Triplet
 def chi2T(params, xdata, ydata, ivar, hb, o31, o32):
-    return np.sum(ivar*(ydata - gauss(x=xdata, x_0=hb-params[0], A=params[1], var=params[2]) - gauss(x=xdata, x_0=o31-params[0], A=params[3], var=params[4]) - gauss(x=xdata, x_0=o32-params[0], A=params[5], var=params[4]))**2)/(len(xdata)-len(params)-1)
+    return np.sum(ivar*(ydata - gauss3(xdata, params, hb, o31, o32)) ** 2) / \
+        (len(xdata) - len(params) - 1)
 
 
 #Reduced Chi square for Doublet

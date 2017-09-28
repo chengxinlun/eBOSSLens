@@ -14,8 +14,8 @@ from matplotlib import pyplot as plt
 def galSave(doublet, obj, peak_candidates, doublet_index, savedir, em_lines,
             doPlot, prodCrit):
     detection = False
-    preProd = 1.0
-    nxtProd = 1.0
+    preProd = 0.0
+    nxtProd = 0.0
     if doublet:
         preProd, nxtProd = fitcSpec(obj, peak_candidates[doublet_index])
         if preProd + nxtProd > prodCrit:
@@ -23,6 +23,7 @@ def galSave(doublet, obj, peak_candidates, doublet_index, savedir, em_lines,
         z_s = peak_candidates[doublet_index].wavelength / 3727.09 - 1.0
         # Find peak near infered OIII and Hbeta by fitting
         fitChi, fitRes = _findPeak(obj, z_s, width=20.0)
+        print(fitChi, fitRes)
         detection = _doubletSave(obj, z_s, peak_candidates, doublet_index,
                                  savedir, preProd, nxtProd, fitChi, fitRes)
         detection = _dblmultSave(obj, z_s, peak_candidates, savedir,
@@ -50,9 +51,12 @@ def galSave(doublet, obj, peak_candidates, doublet_index, savedir, em_lines,
                                   var=peaks[k][2])
             o3hbflux = gauss3(obj.wave, fitRes, 4862.68 * (1.0 + z_s),
                               4960.30 * (1.0 + z_s), 5008.24 * (1.0 + z_s))
-            o3b = [4842.68 * (1.0 + z_s), 5028.0 * (1.0 + z_s)]
+            o3b = [4842.68 * (1.0 + z_s), 5028.24 * (1.0 + z_s)]
+            o3hbwave = [4862.68 * (1.0 + z_s) - fitRes[0],
+                        5008.24 * (1.0 + z_s) - fitRes[3]]
             plotGalaxyLens(doublet, obj, savedir, peak_candidates, preProd,
-                           nxtProd, doublet_index, fit, o3hbflux, fitChi, o3b)
+                           nxtProd, doublet_index, fit, o3hbflux, fitChi, o3b,
+                           o3hbwave)
         if doublet:
             x_doublet = np.mean(peak_candidates[doublet_index].wavDoublet)
             bd = np.linspace(obj.wave2bin(x_doublet) - 10,
@@ -68,18 +72,19 @@ def _findPeak(obj, zsource, width=20.0):
                       obj.wave2bin(o32 + width * (1.0 + zsource)),
                       dtype=np.int16)
     if len(tmp) < 10:
-        return 1000.0, np.array([0.0, 0.0, 1.0, 0.0, 1.0, 0.0])
-    bounds = [(-5.0, 5.0), (0.0, 5.0), (1.0, 8.0), (0.0, 5.0), (1.0, 8.0),
-              (0.0, 5.0)]
+        return 1000.0, np.array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0])
+    bounds = [(-10.0, 10.0), (0.0, 5.0), (1.0, 8.0), (-10.0, 10.0), (0.0, 5.0),
+              (1.0, 8.0), (0.0, 5.0)]
     pWave = obj.wave[tmp]
     pFlux = obj.reduced_flux[tmp]
     pIvar = obj.ivar[tmp]
-    res = minimize(chi2T, [0.0, 1.0, 2.0, 1.0, 2.0, 1.0], args=[pWave, pFlux,
-                                                                pIvar, hb, o31,
-                                                                o32],
+    res = minimize(chi2T, [0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 1.0], args=(pWave,
+                                                                     pFlux,
+                                                                     pIvar, hb,
+                                                                     o31, o32),
                    method='SLSQP', bounds=bounds)
     if res.fun == 0.0:
-        return 1000.0, np.array([0.0, 0.0, 1.0, 0.0, 1.0, 0.0])
+        return 1000.0, np.array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0])
     return res.fun, res.x
 
 
@@ -169,7 +174,7 @@ def galSaveflux(fList, fid, savedir):
 
 
 def plotGalaxyLens(doublet, obj, savedir, peak_candidates, preProd, nxtProd,
-                   doublet_index, fit, o3hb, fitChi, o3b):
+                   doublet_index, fit, o3hb, fitChi, o3b, o3hbw):
     if not doublet:
         ax = plt.subplot(1, 1, 1)
         plt.title('RA=' + str(obj.RA) + ', Dec=' + str(obj.DEC) + ', Plate=' +
@@ -186,9 +191,9 @@ def plotGalaxyLens(doublet, obj, savedir, peak_candidates, preProd, nxtProd,
         plt.close()
     # If doublet, plot in two different windows
     else:
-        if fitChi == 1000.0:
-            fs = (22.5, 5)
-            gd = (1, 9)
+        if fitChi != 1000.0:
+            fs = (22.5, 10)
+            gd = (2, 9)
             mcol = 4
             o2col = 2
             o2p = (0, 4)
@@ -231,6 +236,34 @@ def plotGalaxyLens(doublet, obj, savedir, peak_candidates, preProd, nxtProd,
             ax3.plot(obj.wave, obj.reduced_flux, 'k')
             ax3.plot(obj.wave, o3hb, 'r')
             ax3.set_ylim([-5, 10])
+            ax3.vlines(x=o3hbw[0], ymin=-5, ymax=10, colors='g',
+                       linestyles='dashed')
+            ax3.vlines(x=o3hbw[1], ymin=-5, ymax=10, colors='g',
+                       linestyles='dashed')
+            ax4 = plt.subplot2grid(gd, (1, 0), colspan=4)
+            ax4.plot(obj.wave[10:-10], obj.ivar[10: -10])
+            ax4.vlines(x=o3hbw[0], ymin=-5, ymax=10, colors='g',
+                       linestyles='dashed')
+            ax4.vlines(x=o3hbw[1], ymin=-5, ymax=10, colors='g',
+                       linestyles='dashed')
+            ax5 = plt.subplot2grid(gd, (1, 4), colspan=o2col)
+            ax5.set_xlabel('$\lambda \, [\AA]$ ')
+            ax5.locator_params(tight=True)
+            ax5.set_xlim([peak_candidates[doublet_index].wavelength - 30.0,
+                          peak_candidates[doublet_index].wavelength + 30.0])
+            ax5.plot(obj.wave, obj.ivar, 'k')
+            ax5.set_ylim([-5, 10])
+            ax5.vlines(x=obj.zline['linewave'] * (1.0 + obj.z), ymin=-10, ymax=10,
+                       colors='g', linestyles='dashed')
+            ax6 = plt.subplot2grid(gd, (1, 6), colspan=3)
+            ax6.set_xlabel('$\lambda \, [\AA]$ ')
+            ax6.locator_params(tight=True)
+            ax6.set_xlim(o3b)
+            ax6.plot(obj.wave, obj.ivar, 'k')
+            ax6.vlines(x=o3hbw[0], ymin=-5, ymax=10, colors='g',
+                       linestyles='dashed')
+            ax6.vlines(x=o3hbw[1], ymin=-5, ymax=10, colors='g',
+                       linestyles='dashed')
         # Plot previous one
         if obj.fiberid != 1:
             objPre = SDSSObject(obj.plate, obj.mjd, obj.fiberid - 1,

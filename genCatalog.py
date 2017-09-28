@@ -26,8 +26,8 @@ w = []
 snp = []
 snn = []
 sns = []
-o3w = []
-o3s = []
+fitChi = []
+ws = []
 for each in os.listdir(dataDir):
     tmpDir = os.path.join(dataDir, each)
     if os.path.isdir(tmpDir):
@@ -48,8 +48,8 @@ for each in os.listdir(dataDir):
                 snp.extend(temp[:, 10])
                 snn.extend(temp[:, 11])
                 sns.extend(temp[:, 12])
-                o3w.extend(temp[:, 13])
-                o3s.extend(temp[:, 14])
+                fitChi.extend(temp[:, 13])
+                ws.extend(temp[:, 14])
             else:
                 er.append(temp[0])
                 sc.append(temp[1])
@@ -64,8 +64,8 @@ for each in os.listdir(dataDir):
                 snp.append(temp[10])
                 snn.append(temp[11])
                 sns.append(temp[12])
-                o3w.append(temp[13])
-                o3s.append(temp[14])
+                fitChi.append(temp[13])
+                ws.append(temp[:, 14])
         except Exception as reason:
             print(each + ' ' + str(reason))
 c0 = fits.Column(name="einsteinRadius", array=np.array(er), format='D')
@@ -81,8 +81,8 @@ c9 = fits.Column(name='wavelength', array=np.array(w), format='D')
 ca = fits.Column(name='snPrevFiber', array=np.array(snp), format='D')
 cb = fits.Column(name='snNextFiber', array=np.array(snn), format='D')
 cc = fits.Column(name='snSpectra', array=np.array(sns), format='D')
-cd = fits.Column(name='o3FoundWave', array=np.array(o3w), format='D')
-ce = fits.Column(name='o3FoundSig', array=np.array(o3s), format='D')
+cd = fits.Column(name='o3FitScore', array=np.array(fitChi), format='D')
+ce = fits.Column(name='o3WaveShift', array=np.array(ws), format='D')
 # Magnitude and ebv
 uCan = []
 gCan = []

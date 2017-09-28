@@ -23,13 +23,13 @@ def lensFinder(plate, mjd, fiberid, datav, datadir, savedir, lya, qso, jpt,
                bwidth, bsig, maxchi2, doplot):
     sd = os.path.join(savedir, str(plate) + "-" + str(mjd))
     make_sure_path_exists(sd)
-    try:
-        eBOSSLens(plate, mjd, fiberid, datav, lya, qso, jpt, sd, datadir,
-                  max_chi2=maxchi2, bwidth=bwidth, bsig=bsig, doPlot=doplot)
-    except Exception as reason:
-        text = str(plate) + " " + str(mjd) + " " + str(fiberid) + " " + \
-            str(reason)
-        print(text)
+    # try:
+    eBOSSLens(plate, mjd, fiberid, datav, lya, qso, jpt, sd, datadir,
+              max_chi2=maxchi2, bwidth=bwidth, bsig=bsig, doPlot=doplot)
+    # except Exception as reason:
+    #     text = str(plate) + " " + str(mjd) + " " + str(fiberid) + " " + \
+    #         str(reason)
+    #     print(text)
 
 
 def setArg(argument, defValue):
@@ -40,6 +40,7 @@ def setArg(argument, defValue):
 
 
 if __name__ == "__main__":
+    '''
     # Command line argument parsing
     parser = argparse.ArgumentParser()
     parser.add_argument("pmfile", help="The file for plate and mjd input",
@@ -80,6 +81,7 @@ if __name__ == "__main__":
                          lya, qso, jpt, bwidth, bsig, maxchi2, False))
         res = para_return(lensFinder, args, 8)
         plateStats(each[0], each[1], savedir)
+    '''
     # Uncomment below and comment above to debug
-    # lensFinder(4198, 55480, 908, 'v5_7_0', '/SCRATCH', '../PlotCheck',
-    #            False, False, False, 60.0, 1.2, 2.5, True)
+    lensFinder(6717, 56397, 347, 'v5_7_0', '../SCRATCH', '../PlotCheck',
+               False, False, False, 60.0, 1.2, 2.5, True)
