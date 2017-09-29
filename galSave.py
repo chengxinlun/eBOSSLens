@@ -86,11 +86,13 @@ def _findPeak(obj, zsource, sn, width=20.0):
     pWave = obj.wave[tmp]
     pFlux = obj.reduced_flux[tmp]
     pIvar = obj.ivar[tmp]
-    res = minimize(chi2T, [0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 1.0], args=(pWave,
-                                                                     pFlux,
-                                                                     pIvar, hb,
-                                                                     o31, o32),
-                   method='SLSQP', bounds=bounds)
+    res = minimize(chi2T, [hb - wave_corr[0],
+                           obj.reduced_flux[obj.wave2bin(wave_corr[0])], 2.0,
+                           o32 - wave_corr[2],
+                           obj.reduced_flux[obj.wave2bin(wave_corr[1])], 2.0,
+                           obj.reduced_flux[obj.wave2bin(wave_corr[2])]],
+                   args=(pWave, pFlux, pIvar, hb, o31, o32), method='SLSQP',
+                   bounds=bounds)
     if res.fun == 0.0:
         return 1000.0, np.array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0])
     return res.fun, res.x
