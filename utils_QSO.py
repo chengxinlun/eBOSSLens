@@ -1,8 +1,4 @@
 import numpy as np
-import matplotlib as mpl
-from matplotlib import pyplot as plt
-from matplotlib import gridspec
-from matplotlib.font_manager import FontProperties
 from utils import *
 
 
@@ -20,7 +16,7 @@ def mask_QSO(l_width):
     utils_QSO.mask_QSO(l_width)
     ========================
     Hard-coded mask for QSO broad emissions. The line width parameter allows to stretch the masks.
-    
+
     Parameters:
         l_width: Typical line width of QSO broad emissions
     Returns:
@@ -56,7 +52,7 @@ def mask_QSO(l_width):
     l_SiII_b = 6734
 
     # Relative Width of each line was fixed by experimentation on BOSS QSOs
-    # The hardcoded lines at the end are probably Fe features, but it is not certain 
+    # The hardcoded lines at the end are probably Fe features, but it is not certain
     start_stop_table = np.array([[l_LyA -2.5*l_width, l_LyA +2.5*l_width], \
         [l_NV -0.5*l_width,l_NV +0.5*l_width] , [l_SiIV -1.5*l_width,l_SiIV +1.5*l_width], \
         [l_CIV -2*l_width,l_CIV +2*l_width] , [l_HeII -0.5*l_width,l_HeII +1.5*l_width], \

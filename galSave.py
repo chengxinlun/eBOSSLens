@@ -23,6 +23,7 @@ def galSave(doublet, obj, peak_candidates, doublet_index, savedir, em_lines,
         z_s = peak_candidates[doublet_index].wavelength / 3727.09 - 1.0
         # Find peak near infered OIII and Hbeta by fitting
         fitChi, fitRes = _findPeak(obj, z_s, obj.SN, width=20.0)
+        print(fitChi, fitRes)
         detection = _doubletSave(obj, z_s, peak_candidates, doublet_index,
                                  savedir, preProd, nxtProd, fitChi, fitRes)
         detection = _dblmultSave(obj, z_s, peak_candidates, savedir,
@@ -70,14 +71,20 @@ def _findPeak(obj, zsource, sn, width=20.0):
     tmp = np.linspace(obj.wave2bin(hb - width * (1.0 + zsource)),
                       obj.wave2bin(o32 + width * (1.0 + zsource)),
                       dtype=np.int16)
-    # Peak search for possible emission lines
+    # If strong peak found near, assume as emission line
     wave_corr = []
-    for each in [hb, o31, o32]:
-        tmpBin = [obj.wave2bin(hb - 10.0), obj.wave2bin(hb + 10.0)]
-        tmpSn = np.argmax(sn[tmpBin[0]: tmpBin[1]])
-        if sn[tmpSn] < 2.0:
-            return 1000.0, np.array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0])
-        wave_corr.append(obj.wave[tmpBin[0]: tmpBin[1]][tmpSn])
+    for eachL in [hb, o31, o32]:
+        tmpBin = [obj.wave2bin(eachL - 10.0), obj.wave2bin(eachL + 10.0)]
+        if len(sn[tmpBin[0]: tmpBin[1]]) == 0:
+            wave_corr.append(0.0)  # Does not have this line
+        else:
+            tmpSn = np.argmax(sn[tmpBin[0]: tmpBin[1]])
+            if sn[tmpBin[0]: tmpBin[1]][tmpSn] < 3.0:  # Emission line too weak
+                wave_corr.append(0.0)
+            else:
+                wave_corr.append(eachL - obj.wave[tmpBin[0]: tmpBin[1]][tmpSn])
+    print(wave_corr)
+    # Peak search for possible emission lines
     if len(tmp) < 10:
         return 1000.0, np.array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0])
     bounds = [(-10.0, 10.0), (0.0, 5.0), (1.0, 8.0), (-10.0, 10.0), (0.0, 5.0),
@@ -85,11 +92,12 @@ def _findPeak(obj, zsource, sn, width=20.0):
     pWave = obj.wave[tmp]
     pFlux = obj.reduced_flux[tmp]
     pIvar = obj.ivar[tmp]
-    res = minimize(chi2T, [hb - wave_corr[0],
-                           obj.reduced_flux[obj.wave2bin(wave_corr[0])], 2.0,
-                           o32 - wave_corr[2],
-                           obj.reduced_flux[obj.wave2bin(wave_corr[1])], 2.0,
-                           obj.reduced_flux[obj.wave2bin(wave_corr[2])]],
+    res = minimize(chi2T, [wave_corr[0],
+                           obj.reduced_flux[obj.wave2bin(hb - wave_corr[0])],
+                           2.0, 0.5 * (wave_corr[1] + wave_corr[2]),
+                           obj.reduced_flux[obj.wave2bin(o31 - wave_corr[1])],
+                           2.0,
+                           obj.reduced_flux[obj.wave2bin(o32 - wave_corr[2])]],
                    args=(pWave, pFlux, pIvar, hb, o31, o32), method='SLSQP',
                    bounds=bounds)
     if res.fun == 0.0:
