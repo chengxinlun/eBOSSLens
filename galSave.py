@@ -23,7 +23,6 @@ def galSave(doublet, obj, peak_candidates, doublet_index, savedir, em_lines,
         z_s = peak_candidates[doublet_index].wavelength / 3727.09 - 1.0
         # Find peak near infered OIII and Hbeta by fitting
         fitChi, fitRes = _findPeak(obj, z_s, width=20.0)
-        print(fitChi, fitRes)
         detection = _doubletSave(obj, z_s, peak_candidates, doublet_index,
                                  savedir, preProd, nxtProd, fitChi, fitRes)
         detection = _dblmultSave(obj, z_s, peak_candidates, savedir,

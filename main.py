@@ -40,7 +40,6 @@ def setArg(argument, defValue):
 
 
 if __name__ == "__main__":
-    '''
     # Command line argument parsing
     parser = argparse.ArgumentParser()
     parser.add_argument("pmfile", help="The file for plate and mjd input",
@@ -58,7 +57,7 @@ if __name__ == "__main__":
     # Storing command line argument
     pmfile = args.pmfile
     maxchi2 = setArg(args.c, 2.5)
-    bwidth = setArg(args.w, 60.0)
+    bwidth = setArg(args.w, 30.0)
     bsig = setArg(args.s, 1.2)
     dataversion = setArg(args.dataversion, 'v5_7_0')
     datadir = setArg(args.datadir, '/SCRATCH')
@@ -78,10 +77,9 @@ if __name__ == "__main__":
         args = []
         for fid in fiberid:
             args.append((each[0], each[1], fid, dataversion, datadir, savedir,
-                         lya, qso, jpt, bwidth, bsig, maxchi2, False))
+                         lya, qso, jpt, bwidth, bsig, maxchi2, True))
         res = para_return(lensFinder, args, 8)
         plateStats(each[0], each[1], savedir)
-    '''
     # Uncomment below and comment above to debug
-    lensFinder(6717, 56397, 347, 'v5_7_0', '../SCRATCH', '../PlotCheck',
-               False, False, False, 60.0, 1.2, 2.5, True)
+    # lensFinder(3852, 55243, 327, 'v5_7_0', '../SCRATCH', '../PlotCheck',
+    #            False, False, False, 30.0, 1.2, 2.5, True)

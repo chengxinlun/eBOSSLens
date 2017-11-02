@@ -98,7 +98,16 @@ def eBOSSLens(plate, mjd, fiberid, datav, searchLyA, QSOlens, Jackpot, savedir,
     if not (QSOlens or searchLyA or Jackpot):
         if obj.snSpectra > snCrit:
             raise Exception("Rejected by unusual high SN ratio")
-        obj.mask(eMask * (obj.z + 1.0))
+        # Since >9200 peak will be dropped, masking does not have much
+        # significance
+        tmp = []
+        for eachm in eMask:
+            if eachm[0] * (1.0 + obj.z) > 9200.0:
+                continue
+            else:
+                tmp.append(eachm * (1.0 + obj.z))
+        tmp = np.array(tmp)
+        obj.mask(tmp)
     # Mask BOSS spectra glitches + Sky
     obj.mask(wMask)
     if QSOlens:

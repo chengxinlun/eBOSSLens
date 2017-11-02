@@ -1,6 +1,7 @@
 import os
 import urlparse
 import urllib
+import ssl
 import numpy as n
 
 
@@ -58,4 +59,5 @@ def download_plates(is570):
 
 
 if __name__ == "__main__":
+    ssl._create_default_https_context = ssl._create_unverified_context
     download_plates(True)
