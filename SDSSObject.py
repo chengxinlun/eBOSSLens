@@ -103,8 +103,8 @@ class SDSSObject():
         b = int((np.log10(waveLength) / self.c1) - self.c0 / self.c1)
         if b < 0:
             b = 0
-        elif b > self.nMax:
-            b = self.nMax
+        elif b > self.nMax - 1:
+            b = self.nMax - 1
         return b
 
     def mask(self, lineList):

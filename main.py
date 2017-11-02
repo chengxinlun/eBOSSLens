@@ -3,7 +3,6 @@ import os
 import multiprocessing as mul
 import numpy as np
 from eBOSSLens import eBOSSLens
-from plateStats import plateStats
 from utils import make_sure_path_exists
 
 
@@ -40,6 +39,7 @@ def setArg(argument, defValue):
 
 
 if __name__ == "__main__":
+    '''
     # Command line argument parsing
     parser = argparse.ArgumentParser()
     parser.add_argument("pmfile", help="The file for plate and mjd input",
@@ -79,7 +79,7 @@ if __name__ == "__main__":
             args.append((each[0], each[1], fid, dataversion, datadir, savedir,
                          lya, qso, jpt, bwidth, bsig, maxchi2, True))
         res = para_return(lensFinder, args, 8)
-        plateStats(each[0], each[1], savedir)
+    '''
     # Uncomment below and comment above to debug
-    # lensFinder(3852, 55243, 327, 'v5_7_0', '../SCRATCH', '../PlotCheck',
-    #            False, False, False, 30.0, 1.2, 2.5, True)
+    lensFinder(3606, 55182, 679, 'v5_7_0', '../SCRATCH', '../PlotCheck',
+               False, False, False, 30.0, 1.2, 2.5, True)
