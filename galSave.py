@@ -22,10 +22,9 @@ def galSave(doublet, obj, peak_candidates, doublet_index, savedir, em_lines,
             raise Exception("Rejected by comparing to other fibers")
         z_s = peak_candidates[doublet_index].wavelength / 3727.09 - 1.0
         # Find peak near infered OIII and Hbeta by fitting
-        fitChi, fitRes = _findPeak(obj, z_s, obj.SN, width=20.0)
-        print(fitChi, fitRes)
+        fitChi, fitRes, fitSn = _findPeak(obj, z_s, obj.SN, width=20.0)
         detection = _doubletSave(obj, z_s, peak_candidates, doublet_index,
-                                 savedir, preProd, nxtProd, fitChi, fitRes)
+                                 savedir, preProd, nxtProd, fitChi, fitSn)
         detection = _dblmultSave(obj, z_s, peak_candidates, savedir,
                                  detection, em_lines)
     elif len(peak_candidates) > 1:
@@ -83,10 +82,10 @@ def _findPeak(obj, zsource, sn, width=20.0):
                 wave_corr.append(0.0)
             else:
                 wave_corr.append(eachL - obj.wave[tmpBin[0]: tmpBin[1]][tmpSn])
-    print(wave_corr)
     # Peak search for possible emission lines
     if len(tmp) < 10:
-        return 1000.0, np.array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0])
+        return 1000.0, np.array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0]), np.array([
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
     bounds = [(-10.0, 10.0), (0.0, 5.0), (1.0, 8.0), (-10.0, 10.0), (0.0, 5.0),
               (1.0, 8.0), (0.0, 5.0)]
     pWave = obj.wave[tmp]
@@ -101,18 +100,35 @@ def _findPeak(obj, zsource, sn, width=20.0):
                    args=(pWave, pFlux, pIvar, hb, o31, o32), method='SLSQP',
                    bounds=bounds)
     if res.fun == 0.0:
-        return 1000.0, np.array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0])
-    return res.fun, res.x
+        return 1000.0, np.array([0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0]), np.array([
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    else:
+        param = res.x
+        # Rest flux to 0 if smaller than 0
+        if param[1] < 0.0:
+            param[1] = 0.0
+        if param[4] < 0.0:
+            param[4] = 0.0
+        if param[6] < 0.0:
+            param[6] = 0.0
+        # Get the sn of the peak
+        lineSn = np.zeros(6)
+        lineSn[0] = sn[obj.wave2bin(hb - param[0])]
+        lineSn[1] = sn[obj.wave2bin(o31 - param[3])]
+        lineSn[2] = sn[obj.wave2bin(o32 - param[3])]
+        lineSn[3] = param[1]
+        lineSn[4] = param[4]
+        lineSn[5] = param[6]
+        return res.fun, res.x, lineSn
 
 
 def _doubletSave(obj, z_s, peak_candidates, doublet_index, savedir, pP, nP,
-                 fitChi, fitRes):
-    # List to string
-    text = ""
-    for each in fitRes:
-        text = text + " " + str(each)
+                 fitChi, fitSn):
     score = 0.0
     detection = False
+    text = ' '
+    for each in fitSn:
+        text = text + str(each) + ' '
     fileD = open(os.path.join(savedir, 'candidates_doublet.txt'), 'a')
     if z_s > obj.z + 0.05:
         detection = True
